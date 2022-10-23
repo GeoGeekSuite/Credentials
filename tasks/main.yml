@@ -3,3 +3,24 @@
 - name: create random but idempotent password
   ansible.builtin.set_fact:
     password: "{{ lookup('ansible.builtin.password', '/dev/null', seed=inventory_hostname, length=int_pw_length) }}"
+- name: overwrite with dev password if set
+  ansible.builtin.set_fact:
+    password: '{{ dev_pw }}'
+  when: dev_pw
+- name: Write password
+  debug:
+    msg: 'Password set to: {{ password }} '
+- name: Render secrets yaml
+  template:
+    src: secrets.j2.yaml
+    dest: '{{ manifest_folder }}/secrets.yaml'
+- name: Create Postgres Secrets
+  shell:
+    cmd: 'kubectl apply -f secrets.yaml -n {{ gisnamespace }}'
+    chdir: '{{ manifest_folder }}'
+- name: Remove secrets file
+  file:
+     path: '{{ manifest_folder }}/secrets.yaml'
+     state: absent
+
+

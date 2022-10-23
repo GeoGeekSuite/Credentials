@@ -1,0 +1,5 @@
+---
+# tasks file for Credentials
+- name: create random but idempotent password
+  ansible.builtin.set_fact:
+    password: "{{ lookup('ansible.builtin.password', '/dev/null', seed=inventory_hostname, length=int_pw_length) }}"
